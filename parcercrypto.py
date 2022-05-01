@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import requests
 from tkinter import *
 from tkinter import messagebox
@@ -8,42 +7,32 @@ class MyClass914:
         self.root = master
         self.root.resizable(width=False, height=False)
         self.root.title("Парсинг курса криптовалюты - Лежнев 914")
-        self.root.geometry("400x400")
+        self.root.geometry("400x300")
 
-        self.lbl = Label(root, text="Курс Cardano")
+        self.lbl = Label(root, text="Введите монету")
         self.lbl.place(x=200, y=50, anchor="c")
 
         self.field = Entry()
-        self.field.place(x=200, y=120, anchor="c")
+        self.field.place(x=200, y=80, anchor="c")
 
         self.btn = Button(text="Показать", command=self.main)
-        self.btn.place(x=200, y=180, anchor="c")
+        self.btn.place(x=200, y=110, anchor="c")
 
-        menu = Menu(self.root)
-        submenu = Menu(self.root)
-        self.root.config(menu=menu)
-        menu.add_cascade(label="Об авторе", menu=submenu, command=self.call_me)
+        self.text = Text(root, height=1, width=15)
+        self.text.pack()
+        self.text.tag_configure("center", justify='center')
+        self.text.place(x=200, y=200, anchor="c")
 
-    def call_me(self):
-            self.messagebox.showinfo("Success", "Welcome to our tutorial")
-
-    def get_html(self,url):
-        # делаем запрос по адресу
-        html_content = requests.get(url)
-        # получаем содержание
-        return html_content.text
-
-    def get_data(self,html):
-        soup = BeautifulSoup(html, 'lxml')
-        t = soup.find('div', {'class': "priceValue"}) . find ('span')
-        return t.text
+    def get_data(self, coin):
+        r = requests.get(f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit=1000").json()
+        for element in r['data']['cryptoCurrencyList']:
+            if element["name"].lower() == coin.lower() or element['symbol'].lower() == coin.lower():
+                coin_price = element['quotes'][0]['price']
+                return f"{round(coin_price, 2)} $USD"
 
     def main(self):
-        url = 'https://coinmarketcap.com/ru/currencies/cardano/'
-        res = self.get_html(url)
-        print(self.get_data(res))
-        self.field.delete(0, 'end')
-        self.field.insert(0, self.get_data(res))
+        self.text.delete('1.0', END)
+        self.text.insert(END, self.get_data(self.field.get()))
 
 if __name__ == '__main__':
     root = Tk()
